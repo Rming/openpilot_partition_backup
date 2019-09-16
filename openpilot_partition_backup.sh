@@ -49,6 +49,7 @@ while :; do echo
   echo -e "\t${CBLUE}2. 恢复分区${CEND}"
   read -e -p "请输入序号(默认备份模式)：" mode_flag
   mode_flag=${mode_flag:-1}
+
   if [[ ! ${mode_flag} =~ ^[1-2]$ ]]; then
     echo -e "\n${CWARNING}请输入正确的序号！[1-2]${CEND}"
   else
@@ -60,14 +61,22 @@ while :; do echo
       for i in "${!partitions[@]}"; do
         echo -e "\t${CBLUE}${i}. ${partitions[$i]}${CEND}"
       done
-      read -e -p "请输入序号(直接回车，默认${mode_str}所有分区)：" partition_select
+      read -e -p "请输入序号(默认${mode_str}所有分区)：" partition_select
       partition_select=${partition_select:-"ALL"}
 
       if [[ ${partition_select} == "ALL" ]]; then
         read -e -p "${CYELLOW}你确认要${mode_str}所有分区么？[y/n]：${CEND}" partition_confirm
+        partition_confirm=${partition_confirm:-"y"}
         if [[ "${partition_confirm}" != "y" ]]; then
           continue
         fi
+
+        echo -e "${CYELLOW}跳过 userdata 分区（已跳过）.${CEND}"
+        read -e -p "${CYELLOW}跳过 system 分区（默认跳过）？[y/n]:${CEND}" skip_system
+        skip_system=${skip_system:-"y"}
+
+        read -e -p "${CYELLOW}跳过 cache 分区（默认跳过）？[y/n]:${CEND}" skip_cache
+        skip_cache=${skip_cache:-"y"}
       fi
 
       if [[ ${partition_select} -lt ${partition_count} ]] && [[ ${partition_select} -ge 0 ]] || [[ ${partition_select} == "ALL" ]]; then
@@ -77,6 +86,7 @@ while :; do echo
         echo -e "${CGREEN}备份地址：${BACKUP_DIR}${CEND}"
         # 执行前确认
         read -e -p "${CYELLOW}你确认要执行${mode_str}么？[y/n]：${CEND}" run_confirm
+        run_confirm=${run_confirm:-"y"}
         if [[ "${run_confirm}" != "y" ]]; then
           break
         fi
@@ -96,13 +106,28 @@ while :; do echo
           fi
 
           # 全部还是指定分区
-          if [[ ${partition_select} == "ALL" ]]; then
-            partitionsJob=${partitions}
+          if [[ "${partition_select}" == "ALL" ]]; then
+            partitionsJob=${partitionsJob[@]}
           else
             partitionsJob=(partition_str)
           fi
 
           for partition_str in ${partitionsJob[@]}; do
+            if [[ "${partition_str}" -eq "userdata" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
+
+            if [[ "${skip_system}" -eq "y" ]] && [[ "${partition_str}" -eq "system" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
+
+            if [[ "${skip_cache}" -eq "y" ]] && [[ "${partition_str}" -eq "cache" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
+
             ret=`ls -l /dev/block/bootdevice/by-name | awk '$9 ~ /^'${partition_str}'$/{cmd="dd if="$11" of="BACKUP_DIR"/"$9".img >/dev/null 2>&1";ret=system(cmd);print ret;}' BACKUP_DIR=${BACKUP_DIR}`
             if [ "${ret}" -ne "0" ]; then
               echo -e "${CFAILURE}分区 ${partition_str} ${mode_str} 失败!${CEND}"
@@ -119,7 +144,7 @@ while :; do echo
             echo -e "${CSUCCESS}备份目录检查完毕.${CEND}"
           fi
 
-          if [[ ${partition_select} == "ALL" ]]; then
+          if [[ "${partition_select}" == "ALL" ]]; then
             partitionsJob=${partitions}
           else
             partitionsJob=(partition_str)
@@ -127,6 +152,20 @@ while :; do echo
 
           # 全部还是指定分区
           for partition_str in ${partitionsJob[@]}; do
+            if [[ "${partition_str}" -eq "userdata" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
+
+            if [[ "${skip_system}" -eq "y" ]] && [[ "${partition_str}" -eq "system" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
+
+            if [[ "${skip_cache}" -eq "y" ]] && [[ "${partition_str}" -eq "cache" ]]; then
+              echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
+              continue
+            fi
             ret=`ls -l /dev/block/bootdevice/by-name | awk '$9 ~ /^'${partition_str}'$/{cmd="dd if="BACKUP_DIR"/"$9".img of="$11" >/dev/null 2>&1";ret=system(cmd);print ret;}' BACKUP_DIR=${BACKUP_DIR}`
             if [ "${ret}" -ne "0" ]; then
               echo -e "${CFAILURE}分区 ${partition_str} ${mode_str} 失败!${CEND}"
