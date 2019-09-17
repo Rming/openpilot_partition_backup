@@ -109,7 +109,7 @@ while :; do echo
           if [[ "${partition_select}" == "ALL" ]]; then
             partitionsJob=${partitions[@]}
           else
-            partitionsJob=(partition_str)
+            partitionsJob=(${partition_str})
           fi
 
           for partition_str in ${partitionsJob[@]}; do
@@ -147,7 +147,7 @@ while :; do echo
           if [[ "${partition_select}" == "ALL" ]]; then
             partitionsJob=${partitions[@]}
           else
-            partitionsJob=(partition_str)
+            partitionsJob=(${partition_str})
           fi
 
           # 全部还是指定分区
@@ -166,6 +166,12 @@ while :; do echo
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
+
+            if [[ ! -f "${BACKUP_DIR}/${partition_str}.img" ]]; then
+              echo -e "${CFAILURE}备份 ${partition_str} 镜像 不存在!${CEND}"
+              continue
+            fi
+
             ret=`ls -l /dev/block/bootdevice/by-name | awk '$9 ~ /^'${partition_str}'$/{cmd="dd if="BACKUP_DIR"/"$9".img of="$11" >/dev/null 2>&1";ret=system(cmd);print ret;}' BACKUP_DIR=${BACKUP_DIR}`
             if [ "${ret}" -ne "0" ]; then
               echo -e "${CFAILURE}分区 ${partition_str} ${mode_str} 失败!${CEND}"
