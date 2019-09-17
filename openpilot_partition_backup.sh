@@ -107,23 +107,23 @@ while :; do echo
 
           # 全部还是指定分区
           if [[ "${partition_select}" == "ALL" ]]; then
-            partitionsJob=${partitionsJob[@]}
+            partitionsJob=${partitions[@]}
           else
             partitionsJob=(partition_str)
           fi
 
           for partition_str in ${partitionsJob[@]}; do
-            if [[ "${partition_str}" -eq "userdata" ]]; then
+            if [[ "${partition_str}" == "userdata" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
 
-            if [[ "${skip_system}" -eq "y" ]] && [[ "${partition_str}" -eq "system" ]]; then
+            if [[ "${skip_system}" == "y" ]] && [[ "${partition_str}" == "system" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
 
-            if [[ "${skip_cache}" -eq "y" ]] && [[ "${partition_str}" -eq "cache" ]]; then
+            if [[ "${skip_cache}" == "y" ]] && [[ "${partition_str}" == "cache" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
@@ -145,24 +145,24 @@ while :; do echo
           fi
 
           if [[ "${partition_select}" == "ALL" ]]; then
-            partitionsJob=${partitions}
+            partitionsJob=${partitions[@]}
           else
             partitionsJob=(partition_str)
           fi
 
           # 全部还是指定分区
           for partition_str in ${partitionsJob[@]}; do
-            if [[ "${partition_str}" -eq "userdata" ]]; then
+            if [[ "${partition_str}" == "userdata" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
 
-            if [[ "${skip_system}" -eq "y" ]] && [[ "${partition_str}" -eq "system" ]]; then
+            if [[ "${skip_system}" == "y" ]] && [[ "${partition_str}" == "system" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
 
-            if [[ "${skip_cache}" -eq "y" ]] && [[ "${partition_str}" -eq "cache" ]]; then
+            if [[ "${skip_cache}" == "y" ]] && [[ "${partition_str}" == "cache" ]]; then
               echo -e "${CSUCCESS}分区 ${partition_str} ${mode_str} 跳过!${CEND}"
               continue
             fi
