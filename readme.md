@@ -57,7 +57,7 @@ adb shell
 
 ```bash
 # 初始化bash环境
-source /sdcard/openpilot_partition_backup-master/bash_init.sh
+. /sdcard/openpilot_partition_backup-master/bash_init.sh
 
 # 运行备份恢复脚本
 bash /sdcard/openpilot_partition_backup-master/partition_backup.sh
